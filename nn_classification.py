@@ -1,9 +1,11 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import accuracy_score, log_loss
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -14,13 +16,11 @@ def reduce_dimension(features, n_components):
     :param n_components: Number of principal components
     :return: Data with reduced dimensionality. Shape: (n_samples, n_components)
     """
-
-    # pca = # TODO # Create an instance of PCA from sklearn.decomposition (already imported). 
-    # Set the parameters (some of them are specified in the HW2 sheet).
-
-    X_reduced = np.zeros((features.shape[0], n_components)) # TODO # Fit the model with features, and apply the transformation on the features.
-
-    explained_var = 0 # TODO: # Calculate the percentage of variance explained
+    # Set the parameters
+    pca = PCA(n_components=n_components,random_state=1)
+    pca.fit(features)
+    X_reduced = pca.transform(features)
+    explained_var = np.sum(pca.explained_variance_ratio_)
     print(f'Explained variance: {explained_var}')
     return X_reduced
 
@@ -28,21 +28,35 @@ def train_nn(features, targets):
     """
     Train MLPClassifier with different number of neurons in one hidden layer.
 
-    :param features:
-    :param targets:
+    :param features: Set of features
+    :param targets: Set of targets
     :return:
     """
     X_train, X_test, y_train, y_test = train_test_split(features, targets, test_size=0.2, random_state=33)
 
-    n_hidden_neurons = 1 # TODO create a list
-    # TODO create an instance of MLPClassifier from sklearn.neural_network (already imported).
+    n_hidden_neurons = [2,10,100,200]
     # Set the parameters (some of them are specified in the HW2 sheet).
-
-    train_acc = 0 # TODO
-    test_acc = 0 # TODO
-    loss = 0 # TODO
-    print(f'Train accuracy: {train_acc:.4f}. Test accuracy: {test_acc:.4f}')
-    print(f'Loss: {loss:.4f}')
+    losses=[]
+    for n_hid in n_hidden_neurons:
+        mlp = MLPClassifier(hidden_layer_sizes=(n_hid,), max_iter=500, 
+                            solver='adam', random_state=1)
+        mlp.fit(X_train, y_train)
+        train_acc = accuracy_score(y_train, mlp.predict(X_train))
+        test_acc = accuracy_score(y_test, mlp.predict(X_test))
+        loss= mlp.loss_
+        print(f'N_hid: {n_hid}. Train accuracy: {train_acc:.4f}. Test accuracy: {test_acc:.4f}')
+        print(f'Loss: {loss:.4f}')
+        losses.append(mlp.loss_curve_)
+    
+    #Plot the loss curves
+    for i, n_hid in enumerate(n_hidden_neurons):
+        plt.plot(losses[i], label=f'n_hid={n_hid}')
+    plt.xlabel('Number of Iteration')
+    plt.ylabel('Log Loss')
+    plt.title('Loss Curves')
+    plt.legend()
+    plt.show()
+    
 
 def train_nn_with_regularization(features, targets):
     """
@@ -54,14 +68,41 @@ def train_nn_with_regularization(features, targets):
     """
     X_train, X_test, y_train, y_test = train_test_split(features, targets, test_size=0.2, random_state=33)
 
-    # Copy your code from train_nn, but experiment now with regularization (alpha, early_stopping).
+    n_hidden_neurons = [2,10,100,200]
 
-    train_acc = 0 # TODO
-    test_acc =  0 # TODO
-    loss =  0 # TODO
-    print(f'Train accuracy: {train_acc:.4f}. Test accuracy: {test_acc:.4f}')
-    print(f'Loss: {loss:.4f}')
+    print('alpha=0.1')
+    for n_hid in n_hidden_neurons:
+        mlp = MLPClassifier(hidden_layer_sizes=(n_hid,), max_iter=500, 
+                            solver='adam', random_state=1, alpha=0.1)
+        mlp.fit(X_train, y_train)
+        train_acc = accuracy_score(y_train, mlp.predict(X_train))
+        test_acc = accuracy_score(y_test, mlp.predict(X_test))
+        loss= mlp.loss_
+        print(f'N_hid: {n_hid}. Train accuracy: {train_acc:.4f}. Test accuracy: {test_acc:.4f}')
+        print(f'Loss: {loss:.4f}')
 
+    print('early_stopping=True')
+    for n_hid in n_hidden_neurons:
+        mlp = MLPClassifier(hidden_layer_sizes=(n_hid,), max_iter=500, 
+                            solver='adam', random_state=1,early_stopping=True)
+        mlp.fit(X_train, y_train)
+        train_acc = accuracy_score(y_train, mlp.predict(X_train))
+        test_acc = accuracy_score(y_test, mlp.predict(X_test))
+        loss= mlp.loss_
+        print(f'N_hid: {n_hid}. Train accuracy: {train_acc:.4f}. Test accuracy: {test_acc:.4f}')
+        print(f'Loss: {loss:.4f}')
+
+    
+    print('alpha=0.1, early_stopping=True')
+    for n_hid in n_hidden_neurons:
+        mlp = MLPClassifier(hidden_layer_sizes=(n_hid,), max_iter=500, 
+                            solver='adam', random_state=1,alpha=0.1, early_stopping=True)
+        mlp.fit(X_train, y_train)
+        train_acc = accuracy_score(y_train, mlp.predict(X_train))
+        test_acc = accuracy_score(y_test, mlp.predict(X_test))
+        loss= mlp.loss_
+        print(f'N_hid: {n_hid}. Train accuracy: {train_acc:.4f}. Test accuracy: {test_acc:.4f}')
+        print(f'Loss: {loss:.4f}')
 
 def train_nn_with_different_seeds(features, targets):
     """

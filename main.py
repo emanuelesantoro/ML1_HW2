@@ -3,12 +3,14 @@ import matplotlib.pyplot as plt
 from nn_classification import reduce_dimension, train_nn, train_nn_with_regularization, train_nn_with_different_seeds, \
     perform_grid_search
 from nn_regression import solve_regression_task
+from sklearn.decomposition import PCA
+from sklearn.neural_network import MLPClassifier
 
 def task_1_1_and_1_2():
 
     # Load the 'data/features.npy' and 'data/targets.npy' using np.load.
-    features = np.zeros((2062, 64, 64)) # TODO: Change me
-    targets = np.zeros((2062,))  # TODO: Change me
+    features = np.load('data/features.npy') 
+    targets = np.load('data/targets.npy')  
     print(f'Shapes: {features.shape}, {targets.shape}')
 
     # Show one sample for each digit
@@ -30,14 +32,19 @@ def task_1_1_and_1_2():
     # PCA
     # Task 1.1.1
     print("----- Task 1.1.1 -----")
-    n_components = 1 # TODO: Change me
-    X_reduced = reduce_dimension(features, n_components)
+    
+    pca= PCA(n_components=0.95,svd_solver='full',random_state=1)
+    pca.fit(features)
+    n_components=pca.n_components_
+    print(f'Number of components: {n_components}')
+    
+    X_reduced= reduce_dimension(features, n_components)
     print(X_reduced.shape)
 
     # Task 1.1.2
     print("----- Task 1.1.2 -----")
     train_nn(X_reduced, targets)
-
+    
     # Task 1.1.3
     print("----- Task 1.1.3 -----")
     train_nn_with_regularization(X_reduced, targets)
@@ -50,7 +57,6 @@ def task_1_1_and_1_2():
     print("----- Task 1.2 -----")
     perform_grid_search(X_reduced, targets)
 
-
 def task_2(): # Regression with NNs
     # Load 'data/x_datapoints.npy' and 'data/y_datapoints.npy' using np.load.
     x_dataset = np.load('data/x_datapoints.npy')
@@ -60,7 +66,7 @@ def task_2(): # Regression with NNs
     solve_regression_task(x_dataset, y_targets)
 
 def main():
-    #task_1_1_and_1_2()
+    task_1_1_and_1_2()
     task_2()
 
 
