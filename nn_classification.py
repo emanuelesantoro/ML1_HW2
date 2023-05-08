@@ -28,11 +28,12 @@ def train_nn(features, targets):
     """
     Train MLPClassifier with different number of neurons in one hidden layer.
 
-    :param features: Set of features
-    :param targets: Set of targets
+    :param features:input data
+    :param targets: corresponding label of input data
     :return:
     """
-    X_train, X_test, y_train, y_test = train_test_split(features, targets, test_size=0.2, random_state=33)
+    X_train, X_test, y_train, y_test = train_test_split(features, targets, 
+                                                        test_size=0.2, random_state=33)
 
     n_hidden_neurons = [2,10,100,200]
     # Set the parameters (some of them are specified in the HW2 sheet).
@@ -62,8 +63,8 @@ def train_nn_with_regularization(features, targets):
     """
     Train MLPClassifier using regularization.
 
-    :param features:
-    :param targets:
+    :param features:input data
+    :param targets: corresponding label of input data
     :return:
     """
     X_train, X_test, y_train, y_test = train_test_split(features, targets, test_size=0.2, random_state=33)
@@ -110,41 +111,69 @@ def train_nn_with_different_seeds(features, targets):
     Print (mean +/- std) accuracy on the training and test set.
     Print confusion matrix and classification report.
 
-    :param features:
-    :param targets:
+    :param features:input data
+    :param targets: corresponding label of input data
     :return:
     """
     X_train, X_test, y_train, y_test = train_test_split(features, targets, test_size=0.2, random_state=33)
-    seeds = [0] # TODO create a list of different seeds of your choice
+    seeds = [7,23,69,207,621] 
 
-    train_acc_arr = np.zeros(len(seeds))
-    test_acc_arr = np.zeros(len(seeds))
-
-    # TODO create an instance of MLPClassifier, check the perfomance for different seeds
-
-    train_acc = 0 # TODO 
-    test_acc =  0 # TODO for each seed
-    loss =  0 # TODO for each seed
-    print(f'Train accuracy: {train_acc:.4f}. Test accuracy: {test_acc:.4f}')
-    print(f'Loss: {loss:.4f}')
-
-
-    train_acc_mean = 0 # TODO
-    train_acc_std = 0 # TODO
+    train_acc_arr = []
+    test_acc_arr = []
+    losses=[]
+    n_hid=200
+    test_acc_arr = []
+    for s in seeds:
+        mlp = MLPClassifier(hidden_layer_sizes=(n_hid,), max_iter=500, 
+                            solver='adam', random_state=s, alpha=0.1)
+        mlp.fit(X_train, y_train)
+        train_acc = accuracy_score(y_train, mlp.predict(X_train))
+        test_acc = accuracy_score(y_test, mlp.predict(X_test))
+        test_acc_arr.append(test_acc)
+        train_acc_arr.append(train_acc)
+        losses.append(mlp.loss_curve_)
     
-    test_acc_mean = 0 # TODO
-    test_acc_std = 0 # TODO
-    print(f'On the train set: {train_acc_mean:.4f} +/- {train_acc_std:.4f}')
-    print(f'On the test set: {test_acc_mean:.4f} +/- {test_acc_std:.4f}')
-    # TODO: print min and max accuracy as well
+    test_acc_mean = np.mean(test_acc_arr)
+    test_acc_std = np.std(test_acc_arr)
+    test_acc_min = np.min(test_acc_arr)
+    test_acc_max = np.max(test_acc_arr)
 
-
-    # TODO: Confusion matrix and classification report (for one classifier that performs well)
+    train_acc_mean = np.mean(train_acc_arr)
+    train_acc_std = np.std(train_acc_arr)
+    train_acc_min = np.min(train_acc_arr)
+    train_acc_max = np.max(train_acc_arr)
+    
+    print(f'Average accuracy on the train set: {train_acc_mean:.4f} +/- {train_acc_std:.4f}')
+    print(f'Average accuracy the test set: {test_acc_mean:.4f} +/- {test_acc_std:.4f}')
+    
+    print(f'Minimum accuracy on the train set: {train_acc_min:.4f}, test set: {test_acc_min}' )
+    print(f'Maximum accuracy on the train set: {train_acc_max:.4f}, test set: {test_acc_max}' )
+    
+    #Plot the loss curves
+    for i, s in enumerate(seeds):
+        plt.plot(losses[i], label=f'seed value={s}')
+    plt.xlabel('Number of Iteration')
+    plt.ylabel('Log Loss')
+    plt.title('Loss Curves')
+    plt.legend()
+    plt.show()
+    
     print("Predicting on the test set")
-    # y_pred = 0 # TODO calculate predictions
-    # print(classification_report(y_test, y_pred)) 
-    # print(confusion_matrix(y_test, y_pred, labels=range(10)))
-
+    # Select the MLP classifier with the first seed
+    pred_mlp = MLPClassifier(hidden_layer_sizes=(n_hid,), max_iter=500, solver='adam', random_state=seeds[0], alpha=0.1)
+    pred_mlp.fit(X_train, y_train)
+    
+    # Make predictions on the test set using the best MLP classifier
+    y_pred = pred_mlp.predict(X_test)
+    
+    # Print the classification report and confusion matrix
+    print("Classification Report: ",classification_report(y_test, y_pred))
+    cm=confusion_matrix(y_test, y_pred, labels=range(10))
+    print("Confusion Matix: ",cm)
+    tn, fp, fn, tp = cm.ravel()
+    recall = tp / (tp + fn)
+    print("Recall: ", recall)
+    
 
 def perform_grid_search(features, targets):
     """
