@@ -43,11 +43,11 @@ def task_1_1_and_1_2():
 
     # Task 1.1.2
     print("----- Task 1.1.2 -----")
-    train_nn(X_reduced, targets)
+    #train_nn(X_reduced, targets)
     
     # Task 1.1.3
     print("----- Task 1.1.3 -----")
-    train_nn_with_regularization(X_reduced, targets)
+    #train_nn_with_regularization(X_reduced, targets)
 
     # Task 1.1.4
     print("----- Task 1.1.4 -----")
@@ -55,7 +55,7 @@ def task_1_1_and_1_2():
 
     # Task 1.2   
     print("----- Task 1.2 -----")
-    perform_grid_search(X_reduced, targets)
+    #perform_grid_search(X_reduced, targets)
 
 def task_2(): # Regression with NNs
     # Load 'data/x_datapoints.npy' and 'data/y_datapoints.npy' using np.load.
