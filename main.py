@@ -1,11 +1,12 @@
 import numpy as np
+import warnings
+warnings.filterwarnings("ignore")
 import matplotlib.pyplot as plt
 from nn_classification import reduce_dimension, train_nn, train_nn_with_regularization, train_nn_with_different_seeds, \
     perform_grid_search
 from nn_regression import solve_regression_task
 from sklearn.decomposition import PCA
 from sklearn.neural_network import MLPClassifier
-
 def task_1_1_and_1_2():
 
     # Load the 'data/features.npy' and 'data/targets.npy' using np.load.
@@ -30,7 +31,7 @@ def task_1_1_and_1_2():
     print(features.shape)
 
     # PCA
-    # Task 1.1.1
+    #Task 1.1.1
     print("----- Task 1.1.1 -----")
     
     pca= PCA(n_components=0.95,svd_solver='full',random_state=1)
@@ -51,11 +52,11 @@ def task_1_1_and_1_2():
 
     # Task 1.1.4
     print("----- Task 1.1.4 -----")
-    train_nn_with_different_seeds(X_reduced, targets)
+    #train_nn_with_different_seeds(X_reduced, targets)
 
     # Task 1.2   
     print("----- Task 1.2 -----")
-    #perform_grid_search(X_reduced, targets)
+    perform_grid_search(X_reduced, targets)
 
 def task_2(): # Regression with NNs
     # Load 'data/x_datapoints.npy' and 'data/y_datapoints.npy' using np.load.

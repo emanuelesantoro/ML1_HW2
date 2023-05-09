@@ -1,4 +1,6 @@
 import numpy as np
+import warnings
+warnings.filterwarnings("ignore")
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split
@@ -6,9 +8,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import accuracy_score, log_loss
-import warnings
-warnings.filterwarnings("ignore")
-
+from sklearn.model_selection import ParameterGrid
 
 def reduce_dimension(features, n_components):
     """
@@ -149,7 +149,7 @@ def train_nn_with_different_seeds(features, targets):
     print(f'Minimum accuracy on the train set: {train_acc_min:.4f}, test set: {test_acc_min}' )
     print(f'Maximum accuracy on the train set: {train_acc_max:.4f}, test set: {test_acc_max}' )
     
-    #Plot the loss curves
+    # #Plot the loss curves
     for i, s in enumerate(seeds):
         plt.plot(losses[i], label=f'seed value={s}')
     plt.xlabel('Number of Iteration')
@@ -159,20 +159,29 @@ def train_nn_with_different_seeds(features, targets):
     plt.show()
     
     print("Predicting on the test set")
-    # Select the MLP classifier with the first seed
+    #Select the MLP classifier with the first seed
     pred_mlp = MLPClassifier(hidden_layer_sizes=(n_hid,), max_iter=500, solver='adam', random_state=seeds[0], alpha=0.1)
     pred_mlp.fit(X_train, y_train)
     
-    # Make predictions on the test set using the best MLP classifier
+    #Make predictions on the test set using the best MLP classifier
     y_pred = pred_mlp.predict(X_test)
     
     # Print the classification report and confusion matrix
-    print("Classification Report: ",classification_report(y_test, y_pred))
+    print("Classification Report: \n",classification_report(y_test, y_pred))
     cm=confusion_matrix(y_test, y_pred, labels=range(10))
-    print("Confusion Matix: ",cm)
-    tn, fp, fn, tp = cm.ravel()
-    recall = tp / (tp + fn)
-    print("Recall: ", recall)
+    print("Confusion Matix: \n",cm)
+    tpArr=[0] *10
+    fpArr=[0] *10
+    fnArr=[0] *10
+    for i in range(10):
+        tpArr[i] = cm[i][i]
+        fpArr[i] = sum(cm[j][i] for j in range(10)) - tpArr[i]
+        fnArr[i] = sum(cm[i][j] for j in range(10)) - tpArr[i]
+    error=np.array(fpArr)+np.array(fnArr)
+    print(f'The most misclassified image is image {np.argmax(error)}.')
+    #for i in range(10):
+        #print(f'Recall of class {i} is {tpArr[i]/(tpArr[i]+fnArr[i])}')
+        
     
 
 def perform_grid_search(features, targets):
@@ -182,34 +191,28 @@ def perform_grid_search(features, targets):
     Create an instance of GridSearchCV with parameters nn and dict.
     Print the best score and the best parameter set.
 
-    :param features:
+    :param features: input data
     :param targets:
     :return:
     """
     X_train, X_test, y_train, y_test = train_test_split(features, targets, test_size=0.2, random_state=33)
     
+    #Create Dictionary
     parameters = {
         "alpha": [0.0, 0.1, 1.0, 10.0],
         "solver": ["lbfgs", "adam"],
         "activation": ["logistic", "relu"],
         "hidden_layer_sizes": [(100,), (200,)]
     }
-
+    print(f'Number of model architectures to be tested: {len(ParameterGrid(parameters))}')
     nn = MLPClassifier(max_iter=100, random_state=1, learning_rate_init=0.01)
-    grid_search = GridSearchCV(estimator=nn, param_grid=parameters, n_jobs=-1)
-
+    grid_search = GridSearchCV(estimator=nn, param_grid=parameters, n_jobs=-1, verbose=False)
     grid_search.fit(X_train, y_train)
-    print("Best score: " + grid_search.best_score_)
-    print("Best parameters: ")
-    print(grid_search.best_params_)
+    # print message when training is complete
+    print("\nTraining complete!")
+    print(f'Best score: {grid_search.best_score_}')
+    print(f'Best parameters: {grid_search.best_params_}')
 
     best_nn = grid_search.best_estimator_
-    print("Test accuracy: " + str(best_nn.score(X_test, y_test)))
-
-    # nn = # TODO create an instance of MLPClassifier. Do not forget to set parameters as specified in the HW2 sheet.
-    # grid_search = # TODO create an instance of GridSearchCV from sklearn.model_selection (already imported) with
-    # appropriate params. Set: n_jobs=-1, this is another parameter of GridSearchCV, in order to get faster execution of the code.
-
-    # TODO call fit on the train data
-    # TODO print the best score
-    # TODO print the best parameters found by grid_search
+    test_accuracy=accuracy_score(y_test,best_nn.predict(X_test))
+    print(f'Test accuracy: {test_accuracy}')
