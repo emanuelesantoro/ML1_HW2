@@ -28,18 +28,21 @@ class Perceptron:
         return y_predictions
 
     def _fit(self, x_train, y_train):
-        ## TODO
         assert x_train.shape[0] == y_train.shape[0], "x_train and y_train should have the same number of rows"
         self.w = np.zeros((x_train.shape[1], 1))
 
         for k in range(self.max_iter):
+            stop = True
             for i in range(x_train.shape[0]):
                 a = np.sum(np.dot(self.w[:, 0], x_train[i]))
                 pred = 0
                 if a >= 0:
                     pred = 1
                 if (pred != y_train[i]):
+                    stop = False
                     self.w[:,0]=self.w[:,0]+self.learning_rate*(y_train[i]-pred)*x_train[i]
+            if stop:
+                break
 
     def _predict(self, x):
         assert self.w.shape[0] == x.shape[1]
@@ -92,12 +95,12 @@ def plot_decision_boundary(perceptron, x, y):
 
 
 def main():
-    x, y = load_data()
+    # x, y = load_data()
     x, y = load_non_linearly_separable_data()
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=1)
 
     learning_rate = 0.1
-    n_iter = 5
+    n_iter = 100
 
     # Perceptron from sklearn
     perceptron = SkPerceptron(alpha=learning_rate, max_iter=n_iter, fit_intercept=False)
@@ -107,6 +110,8 @@ def main():
     print("Training MSE:", train_mse)
     print("Testing MSE: ", test_mse)
     plot_decision_boundary(perceptron, x, y)
+    plt.savefig("Perceptron plots/sklearn_nonlinear_data.png", dpi=300)
+    plt.show()
 
     # Your own perceptron
     perceptron = Perceptron(learning_rate=learning_rate, max_iter=n_iter)
@@ -116,6 +121,7 @@ def main():
     print("Training MSE:", train_mse)
     print("Testing MSE: ", test_mse)
     plot_decision_boundary(perceptron, x, y)
+    plt.savefig("Perceptron plots/perceptron_nonlinear_data.png", dpi=300)
     plt.show()
 
 
