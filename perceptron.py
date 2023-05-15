@@ -34,20 +34,18 @@ class Perceptron:
 
         for k in range(self.max_iter):
             for i in range(x_train.shape[0]):
-                a = np.sum([self.w[j][0]*x_train[i][j] for j in range(x_train.shape[1])])
+                a = np.sum(np.dot(self.w[:, 0], x_train[i]))
                 pred = 0
                 if a >= 0:
                     pred = 1
                 if (pred != y_train[i]):
-                    for j in range(self.w.shape[0]):
-                        self.w[j][0] = self.w[j][0] + \
-                            self.learning_rate*(y_train[i]-pred)*x_train[i][j]
+                    self.w[:,0]=self.w[:,0]+self.learning_rate*(y_train[i]-pred)*x_train[i]
 
     def _predict(self, x):
         assert self.w.shape[0] == x.shape[1]
         z = np.zeros(x.shape[0])
         for i in range(x.shape[0]):
-            a = np.sum([self.w[j][0]*x[i][j] for j in range(x.shape[1])])
+            a = np.sum(np.dot(self.w[:, 0], x[i]))
             if a >= 0:
                 z[i] = 1
         return z
@@ -95,7 +93,7 @@ def plot_decision_boundary(perceptron, x, y):
 
 def main():
     x, y = load_data()
-    #x, y = load_non_linearly_separable_data()
+    x, y = load_non_linearly_separable_data()
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=1)
 
     learning_rate = 0.1
