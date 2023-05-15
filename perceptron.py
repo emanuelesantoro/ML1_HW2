@@ -29,12 +29,28 @@ class Perceptron:
 
     def _fit(self, x_train, y_train):
         ## TODO
-        pass
+        assert x_train.shape[0] == y_train.shape[0], "x_train and y_train should have the same number of rows"
+        self.w = np.zeros((x_train.shape[1], 1))
+
+        for k in range(self.max_iter):
+            for i in range(x_train.shape[0]):
+                a = np.sum([self.w[j][0]*x_train[i][j] for j in range(x_train.shape[1])])
+                pred = 0
+                if a >= 0:
+                    pred = 1
+                if (pred != y_train[i]):
+                    for j in range(self.w.shape[0]):
+                        self.w[j][0] = self.w[j][0] + \
+                            self.learning_rate*(y_train[i]-pred)*x_train[i][j]
 
     def _predict(self, x):
-        ## TODO
-        pass
-        return np.zeros(x.shape[0])
+        assert self.w.shape[0] == x.shape[1]
+        z = np.zeros(x.shape[0])
+        for i in range(x.shape[0]):
+            a = np.sum([self.w[j][0]*x[i][j] for j in range(x.shape[1])])
+            if a >= 0:
+                z[i] = 1
+        return z
 
 
 def load_data():
