@@ -89,7 +89,7 @@ def plot_decision_boundary(perceptron, x, y):
     y_vals = y_vals.reshape(dim1_vals.shape)
 
     plt.figure()
-    plt.title("Two linearly-separable classes with decision boundary", fontsize='small')
+    plt.title("Two non linearly-separable classes with decision boundary", fontsize='small')
     plt.contourf(dim1_vals, dim2_vals, y_vals, alpha=0.4)
     plt.scatter(x[:, 0], x[:, 1], marker='o', c=y) 
 
